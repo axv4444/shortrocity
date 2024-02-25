@@ -4,3 +4,4 @@ shorts/
 *.txt
 !response.txt
 !requirements.txt
+prompt.txt

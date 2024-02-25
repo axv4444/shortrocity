@@ -5,6 +5,7 @@ import cv2
 import os
 
 offset = 50
+channel_text = """Shop | Donate\nwww.xaviergonsalves.com"""
 
 def get_audio_duration(audio_file):
     return len(AudioSegment.from_file(audio_file))
@@ -17,6 +18,10 @@ def write_text(text, frame, video_writer):
     font_scale = 3
     border = 5
 
+    channel_thickness = 3
+    channel_text_font_scale = 2
+    channel_border = 1
+
     # Calculate the position for centered text
     text_size = cv2.getTextSize(text, font, font_scale, thickness)[0]
     text_x = (frame.shape[1] - text_size[0]) // 2  # Center horizontally
@@ -25,6 +30,17 @@ def write_text(text, frame, video_writer):
 
     frame = cv2.putText(frame, text, org, font, font_scale, black_color, thickness + border * 2, cv2.LINE_AA)
     frame = cv2.putText(frame, text, org, font, font_scale, white_color, thickness, cv2.LINE_AA)
+    for i, line in enumerate(channel_text.split('\n')):
+        channel_text_size = cv2.getTextSize(line, font, channel_text_font_scale, thickness)[0]
+        channel_text_x = (frame.shape[1] - channel_text_size[0]) // 2  # Center horizontally
+        if i == 0:
+            channel_text_y = channel_text_size[1] + 30  # Start with a margin from the top of the image
+        else:
+            channel_text_y += channel_text_size[1] + 30  # Add a margin between lines
+        # channel_text_y = (channel_text_size[1])*(i + 1) + 2  # Top vertically
+        channel_text_org = (channel_text_x, channel_text_y)  # Position of the text
+        frame = cv2.putText(frame, line, channel_text_org, font, channel_text_font_scale, black_color, channel_thickness + channel_border * 2, cv2.LINE_AA)
+        frame = cv2.putText(frame, line, channel_text_org, font, channel_text_font_scale, white_color, channel_thickness, cv2.LINE_AA)
 
     video_writer.write(frame)
 
@@ -33,8 +49,8 @@ def add_narration_to_video(narrations, input_video, output_dir, output_file):
     cap = cv2.VideoCapture(input_video)
 
     # Define the codec and create a VideoWriter object to save the output video
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    temp_video = os.path.join(output_dir, "with_transcript.avi")
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    temp_video = os.path.join(output_dir, "with_transcript.mp4")
     out = cv2.VideoWriter(temp_video, fourcc, 30, (int(cap.get(3)), int(cap.get(4))))
 
     full_narration = AudioSegment.empty()
